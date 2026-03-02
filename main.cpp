@@ -10,16 +10,16 @@ class Student {
 public:
     string name;
     string index;
-    
+
     Student(string n = "", string idx = "") {
         name = n;
         index = idx;
     }
-    
+
     void display() {
         cout << index << " - " << name;
     }
-    
+
     string toFileString() {
         return index + "," + name;
     }
@@ -35,31 +35,31 @@ public:
     vector<string> present;
     vector<string> late;
     vector<string> absent;
-    
+
     AttendanceSession(string code = "", string d = "", string t = "", int h = 1) {
         courseCode = code;
         date = d;
         time = t;
         duration = h;
     }
-    
+
     void markPresent(string idx) { present.push_back(idx); }
     void markLate(string idx) { late.push_back(idx); }
     void markAbsent(string idx) { absent.push_back(idx); }
-    
+
     bool isMarked(string idx) {
         for (string i : present) if (i == idx) return true;
         for (string i : late) if (i == idx) return true;
         for (string i : absent) if (i == idx) return true;
         return false;
     }
-    
+
     void display() {
         cout << "\n=== SESSION ===\n";
         cout << courseCode << " | " << date << " | " << time << " (" << duration << "h)\n";
         cout << "Present: " << present.size() << " | Late: " << late.size() << " | Absent: " << absent.size() << "\n";
     }
-    
+
     void report() {
         cout << "\n=== ATTENDANCE REPORT ===\n";
         cout << courseCode << " - " << date << "\n";
@@ -71,7 +71,7 @@ public:
         for (string i : absent) cout << " " << i;
         cout << "\n";
     }
-    
+
     void saveToFile() {
         ofstream f("session_" + courseCode + "_" + date + ".txt");
         f << "COURSE: " << courseCode << "\nDATE: " << date << "\nTIME: " << time << "\n";
@@ -119,25 +119,25 @@ void loadSessions() {
             return;
         }
     }
-    
+
     string line;
     sessions.clear();
     while (getline(f, line)) {
         if (line.empty()) continue;
-        
+
         size_t p1 = line.find(",");
         size_t p2 = line.find(",", p1+1);
         size_t p3 = line.find(",", p2+1);
-        
+
         if (p1 == string::npos || p2 == string::npos || p3 == string::npos) {
             cout << "Skipping invalid line: " << line << "\n";
             continue;
         }
-        
+
         string code = line.substr(0, p1);
         string date = line.substr(p1+1, p2-p1-1);
         string time = line.substr(p2+1, p3-p2-1);
-        
+
         try {
             int dur = stoi(line.substr(p3+1));
             sessions.push_back(AttendanceSession(code, date, time, dur));
@@ -157,14 +157,14 @@ void saveSessions() {
         check.close();
         rename("sessions.txt", "sessions_backup.txt");
     }
-    
+
     // Save new sessions
     ofstream f("sessions.txt");
     if (!f.is_open()) {
         cout << "Error: Cannot save sessions!\n";
         return;
     }
-    
+
     for (AttendanceSession s : sessions) {
         f << s.courseCode << "," << s.date << "," << s.time << "," << s.duration << "\n";
         s.saveToFile(); // Save individual session file
@@ -215,15 +215,15 @@ bool confirm(string msg) {
 // Validation for 8 digits + 1 letter (e.g., 01240154D)
 bool validIndex(string i) { 
     if (i.length() != 9) return false; // 8 digits + 1 letter = 9 total
-    
+
     // Check first 8 characters are digits
     for (int pos = 0; pos < 8; pos++) {
         if (!isdigit(i[pos])) return false;
     }
-    
+
     // Check last character is a letter
     if (!isalpha(i[8])) return false;
-    
+
     return true;
 }
 
@@ -236,48 +236,48 @@ bool studentExists(string i) {
 void registerStudent() {
     string n, i;
     cout << "Invalid index! Must be 8 digits followed by a letter (e.g., 01240154D).\n";
-    
+
     // Validate index format
     if (!validIndex(i)) { 
         cout << "Invalid index! Must be 3 digits (001-999).\n"; 
         return; 
     }
-    
+
     // Check if already exists
     if (studentExists(i)) { 
         cout << "Student with index " << i << " already exists!\n"; 
         return; 
     }
-    
+
     cout << "Name: "; 
     cin.ignore(); 
     getline(cin, n);
-    
+
     // Validate name not empty
     if (n.length() < 2) {
         cout << "Name too short!\n";
         return;
     }
-    
+
     students.push_back(Student(n, i));
     saveStudents();
     cout << "Student registered successfully!\n";
 }
 void viewStudents() {
     showHeader("STUDENT LIST");
-    
+
     if (students.empty()) {
         showWarning("No students registered.");
         pause();
         return;
     }
-    
+
     for (int i=0; i<students.size(); i++) {
         cout << i+1 << ". ";
         students[i].display();
         cout << "\n";
     }
-    
+
     showSuccess("Total: " + to_string(students.size()) + " student(s)");
     pause();
 }
@@ -314,12 +314,12 @@ void viewSessions() {
 void markAttendance() {
     if (sessions.empty()) { cout << "\nNo sessions\n"; return; }
     if (students.empty()) { cout << "\nNo students\n"; return; }
-    
+
     cout << "\nSelect session:\n";
     for (int i=0; i<sessions.size(); i++) cout << i+1 << ". " << sessions[i].courseCode << "\n";
     int s; cin >> s; s--;
     if (s<0 || s>=sessions.size()) { cout << "Invalid\n"; return; }
-    
+
     sessions[s].display();
     cout << "\nStudents:\n";
     for (Student stu : students) {
@@ -327,7 +327,7 @@ void markAttendance() {
         if (sessions[s].isMarked(stu.index)) cout << " [DONE]";
         cout << "\n";
     }
-    
+
     string idx; int st;
     cout << "\nEnter index (0 to finish): ";
     while (cin >> idx, idx != "0") {
@@ -362,7 +362,7 @@ void summary() {
         cout << "Late: " << l << " (" << (l*100/t) << "%)\n";
         cout << "Absent: " << a << " (" << (a*100/t) << "%)\n";
     }
-    
+
     char save;
     cout << "\nSave summary to file? (y/n): ";
     cin >> save;
@@ -370,12 +370,12 @@ void summary() {
         ofstream file("summary_report.txt");
         file << "ATTENDANCE SUMMARY REPORT\n";
         file << "=========================\n";
-        
+
         // Get current date
         time_t now = time(0);
         char* dt = ctime(&now);
         file << "Date: " << dt;
-        
+
         file << "Sessions: " << sessions.size() << "\n";
         file << "Total Marks: " << t << "\n\n";
         file << "Present: " << p;
@@ -394,7 +394,7 @@ void summary() {
 int main() {
     loadStudents(); 
     loadSessions();
-    
+
     int ch;
     do {
         cout << "\n=== WEEK 3 ATTENDANCE ===\n";
@@ -409,7 +409,7 @@ int main() {
         cout << "9. Exit\n";
         cout << "Choice: ";
         cin >> ch;
-        
+
         if (ch==1) registerStudent();
         else if (ch==2) viewStudents();
         else if (ch==3) searchStudent();
@@ -432,8 +432,8 @@ int main() {
             cout << "Goodbye!\n"; 
         }
         else cout << "Invalid choice\n";
-        
+
     } while (ch != 9);
-    
+
     return 0;
 }
